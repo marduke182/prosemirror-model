@@ -6,6 +6,11 @@ import {compareDeep} from "./comparedeep"
 
 const emptyAttrs = Object.create(null)
 
+let counter = 0;
+function getId() {
+  return counter++;
+}
+
 // ::- This class represents a node in the tree that makes up a
 // ProseMirror document. So a document is an instance of `Node`, with
 // children that are also instances of `Node`.
@@ -19,7 +24,8 @@ const emptyAttrs = Object.create(null)
 // **Do not** directly mutate the properties of a `Node` object. See
 // [the guide](/docs/guide/#doc) for more information.
 export class Node {
-  constructor(type, attrs, content, marks) {
+  constructor(type, attrs, content, marks, id = getId()) {
+    this.id = id;
     // :: NodeType
     // The type of node that this is.
     this.type = type
@@ -140,6 +146,11 @@ export class Node {
   copy(content = null) {
     if (content == this.content) return this
     return new this.constructor(this.type, this.attrs, content, this.marks)
+  }
+
+  copyWithId(content = null) {
+    if (content == this.content) return this
+    return new this.constructor(this.type, this.attrs, content, this.marks, this.id)
   }
 
   // :: ([Mark]) → Node

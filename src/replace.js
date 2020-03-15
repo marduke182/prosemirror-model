@@ -101,7 +101,7 @@ function removeRange(content, from, to) {
     return content.cut(0, from).append(content.cut(to))
   }
   if (index != indexTo) throw new RangeError("Removing non-flat range")
-  return content.replaceChild(index, child.copy(removeRange(child.content, from - offset - 1, to - offset - 1)))
+  return content.replaceChild(index, child.copyWithId(removeRange(child.content, from - offset - 1, to - offset - 1)))
 }
 
 function insertInto(content, dist, insert, parent) {
@@ -111,7 +111,7 @@ function insertInto(content, dist, insert, parent) {
     return content.cut(0, dist).append(insert).append(content.cut(dist))
   }
   let inner = insertInto(child.content, dist - offset - 1, insert)
-  return inner && content.replaceChild(index, child.copy(inner))
+  return inner && content.replaceChild(index, child.copyWithId(inner))
 }
 
 // :: Slice
@@ -130,7 +130,7 @@ function replaceOuter($from, $to, slice, depth) {
   let index = $from.index(depth), node = $from.node(depth)
   if (index == $to.index(depth) && depth < $from.depth - slice.openStart) {
     let inner = replaceOuter($from, $to, slice, depth + 1)
-    return node.copy(node.content.replaceChild(index, inner))
+    return node.copyWithId(node.content.replaceChild(index, inner))
   } else if (!slice.content.size) {
     return close(node, replaceTwoWay($from, $to, depth))
   } else if (!slice.openStart && !slice.openEnd && $from.depth == depth && $to.depth == depth) { // Simple, flat case
@@ -181,7 +181,7 @@ function addRange($start, $end, depth, target) {
 function close(node, content) {
   if (!node.type.validContent(content))
     throw new ReplaceError("Invalid content for node " + node.type.name)
-  return node.copy(content)
+  return node.copyWithId(content)
 }
 
 function replaceThreeWay($from, $start, $end, $to, depth) {
@@ -217,9 +217,9 @@ function replaceTwoWay($from, $to, depth) {
 
 function prepareSliceForReplace(slice, $along) {
   let extra = $along.depth - slice.openStart, parent = $along.node(extra)
-  let node = parent.copy(slice.content)
+  let node = parent.copyWithId(slice.content)
   for (let i = extra - 1; i >= 0; i--)
-    node = $along.node(i).copy(Fragment.from(node))
+    node = $along.node(i).copyWithId(Fragment.from(node))
   return {start: node.resolveNoCache(slice.openStart + extra),
           end: node.resolveNoCache(node.content.size - slice.openEnd - extra)}
 }
